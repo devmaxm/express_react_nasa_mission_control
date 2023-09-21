@@ -4,6 +4,7 @@ const {
     isLaunchExist,
     abortLaunch
 } = require('../../models/launches.model')
+const planetSchema = require("../../models/planets.mongo");
 
 async function httpGetAllLaunches(req, res) {
     return res.status(200).json({launches: await getAllLaunches()})
@@ -21,6 +22,10 @@ async function httpAddNewLaunch(req, res) {
         return res.status(400).json({
             error: "Invalid launch date"
         })
+    }
+    const planet = await planetSchema.findOne({keplerName: launch.target})
+    if (!planet) {
+        return res.status(400).json({error: 'No matching planet found'})
     }
     return res.status(201).json(await addNewLaunch(launch))
 }

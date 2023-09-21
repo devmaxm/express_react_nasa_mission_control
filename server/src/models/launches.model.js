@@ -26,11 +26,6 @@ async function getAllLaunches() {
 }
 
 async function addNewLaunch(launch) {
-    const planet = await planetSchema.findOne({keplerName: launch.target})
-    if (!planet) {
-        throw new Error('No matching planet found');
-    }
-
     const newLaunch = Object.assign(launch, {
         flightNumber: await getLatestFlightNumber() + 1,
         customers: ["NASA"],
@@ -42,15 +37,18 @@ async function addNewLaunch(launch) {
 }
 
 async function saveLaunch(launch) {
-    return await launchSchema.findOneAndUpdate({
-        flightNumber: launch.flightNumber
-    }, launch, {upsert: true})
+    return await launchSchema.findOneAndUpdate(
+        {flightNumber: launch.flightNumber},
+        launch,
+        {upsert: true, new: true}
+    )
 }
 
 async function abortLaunch(launchId) {
     return await launchSchema.findOneAndUpdate(
         {flightNumber: launchId},
-        {success: false, upcoming: false}
+        {success: false, upcoming: false},
+        {new: true}
     )
 }
 
